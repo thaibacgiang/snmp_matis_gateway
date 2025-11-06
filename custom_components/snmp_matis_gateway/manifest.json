@@ -1,7 +1,7 @@
 {
   "domain": "snmp_matis_gateway",
   "name": "SNMP MATIS Gateway",
-  "version": "2.0.1",
+  "version": "2.0.0",
   "config_flow": true,
   "documentation": "https://github.com/thaibacgiang/snmp_matis_gateway",
   "requirements": ["pysnmp"],
