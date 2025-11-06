@@ -1,3 +1,4 @@
+# __init__.py
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
@@ -10,6 +11,7 @@ from .const import DOMAIN, PLATFORMS
 from .hub import MatisHub
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up SNMP MATIS Gateway from a config entry."""
     hub = MatisHub(hass, entry.data)
     await hub.async_discover()  # initial discovery
     await hub.async_first_poll()
@@ -28,6 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
