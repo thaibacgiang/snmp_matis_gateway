@@ -2,11 +2,9 @@
   "domain": "snmp_matis_gateway",
   "name": "SNMP MATIS Gateway",
   "version": "2.0.0",
-  "documentation": "https://example.com/snmp_matis_gateway",
-  "requirements": [
-    "pysnmp"
-  ],
-  "codeowners": [
-    "@you"
-  ]
+  "config_flow": true,
+  "documentation": "https://github.com/thaibacgiang/snmp_matis_gateway",
+  "requirements": ["pysnmp"],
+  "codeowners": ["@thaibacgiang"],
+  "iot_class": "local_polling"
 }
