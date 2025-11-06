@@ -1,0 +1,8 @@
+{
+  "name": "SNMP MATIS Gateway",
+  "content_in_root": false,
+  "domains": ["snmp_matis_gateway"],
+  "homeassistant": "2024.1.0",
+  "iot_class": "local_polling",
+  "render_readme": true
+}
