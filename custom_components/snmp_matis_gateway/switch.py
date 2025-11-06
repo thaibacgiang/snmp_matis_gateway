@@ -1,3 +1,4 @@
+# switch.py
 from __future__ import annotations
 
 from homeassistant.components.switch import SwitchEntity
@@ -8,7 +9,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 from .hub import MatisHub
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+):
+    """Set up SNMP MATIS Gateway switches."""
     hub: MatisHub = hass.data[DOMAIN][entry.entry_id]
 
     entities = [MatisSwitch(hub, s) for s in hub.switches]
@@ -26,12 +31,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         if new:
             async_add_entities(new)
 
-    hass.helpers.event.async_track_time_interval(_maybe_add_new_switches, hass.helpers.event.timedelta(seconds=15))
+    hass.helpers.event.async_track_time_interval(
+        _maybe_add_new_switches, hass.helpers.event.timedelta(seconds=15)
+    )
+
 
 class MatisSwitch(SwitchEntity):
+    """Representation of a MATIS SNMP Switch."""
+
     _attr_has_entity_name = True
 
     def __init__(self, hub: MatisHub, desc: dict):
+        """Initialize the switch."""
         self.hub = hub
         self._desc = desc
         self._state = None
@@ -40,6 +51,7 @@ class MatisSwitch(SwitchEntity):
 
     @property
     def is_on(self) -> bool | None:
+        """Return true if switch is on."""
         # state sensor value if present (0/1)
         key = f"{self._desc['unique_id']}_state"
         base = self.hub.get_value(key)
@@ -54,7 +66,9 @@ class MatisSwitch(SwitchEntity):
             return None
 
     async def async_turn_on(self, **kwargs):
+        """Turn the switch on."""
         await self.hub.async_set_switch(self._desc["oid"], True)
 
     async def async_turn_off(self, **kwargs):
+        """Turn the switch off."""
         await self.hub.async_set_switch(self._desc["oid"], False)
