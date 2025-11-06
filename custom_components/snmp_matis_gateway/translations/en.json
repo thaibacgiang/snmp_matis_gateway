@@ -1,0 +1,16 @@
+{
+  "title": "SNMP MATIS Gateway",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect device",
+        "description": "Enter IP and communities for SNMP.",
+        "data": {
+          "host": "Host IP",
+          "read_community": "Read community (GET)",
+          "write_community": "Write community (SET)"
+        }
+      }
+    }
+  }
+}

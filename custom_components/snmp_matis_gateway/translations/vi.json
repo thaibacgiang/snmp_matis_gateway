@@ -1,0 +1,16 @@
+{
+  "title": "SNMP MATIS Gateway",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Kết nối thiết bị",
+        "description": "Nhập IP và community để kết nối SNMP.",
+        "data": {
+          "host": "Địa chỉ IP",
+          "read_community": "Community đọc (GET)",
+          "write_community": "Community ghi (SET)"
+        }
+      }
+    }
+  }
+}
