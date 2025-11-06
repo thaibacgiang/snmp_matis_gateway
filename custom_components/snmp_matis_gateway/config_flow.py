@@ -5,8 +5,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_HOST
 from .const import DOMAIN, CONF_READ_COMMUNITY, CONF_WRITE_COMMUNITY
 
-class SnmpMatisConfigFlow(config_entries.ConfigFlow):
-    DOMAIN = DOMAIN
+class SnmpMatisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
