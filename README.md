@@ -1,6 +1,6 @@
 # SNMP MATIS Gateway for Home Assistant
 
-Tự động phát hiện Attomat MATIS, PIN Lithium ZTT, SDM220, DDS,...
+Tự động phát hiện Attomat MATIS, PIN Lithium , SDM220, DDS,...
 Không cần YAML. Tự tạo sensor + switch.
 
 ## Cài đặt
