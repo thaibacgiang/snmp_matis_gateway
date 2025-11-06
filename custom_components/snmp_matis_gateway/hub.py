@@ -1,4 +1,3 @@
-# hub.py
 from __future__ import annotations
 
 import asyncio
@@ -12,11 +11,9 @@ from pysnmp.hlapi import (
     ObjectType, ObjectIdentity, getCmd
 )
 
-from .const import CONF_READ_COMMUNITY, CONF_WRITE_COMMUNITY
-
+from .const import DOMAIN, CONF_READ_COMMUNITY, CONF_WRITE_COMMUNITY
 
 def _snmp_get(ip: str, community: str, oid: str) -> Optional[str]:
-    """Perform SNMP GET operation."""
     iterator = getCmd(
         SnmpEngine(),
         CommunityData(community),
@@ -31,9 +28,7 @@ def _snmp_get(ip: str, community: str, oid: str) -> Optional[str]:
         return str(vb[1])
     return None
 
-
 def _snmp_set(ip: str, community: str, oid: str, value: int) -> bool:
-    """Perform SNMP SET operation."""
     # lazy import to avoid cost if not needed
     from pysnmp.hlapi import setCmd, Integer
     iterator = setCmd(
@@ -46,7 +41,6 @@ def _snmp_set(ip: str, community: str, oid: str, value: int) -> bool:
     errorIndication, errorStatus, errorIndex, varBinds = next(iterator)
     return not (errorIndication or errorStatus)
 
-
 TRANSFORMS: Dict[str, Callable[[Optional[str]], Optional[float]]] = {
     "raw_int": lambda v: float(v) if v is not None else None,
     "div100": lambda v: (float(v)/100.0) if v is not None else None,
@@ -56,14 +50,10 @@ TRANSFORMS: Dict[str, Callable[[Optional[str]], Optional[float]]] = {
     "kW_div1000_to_W": lambda v: (float(v)/1000.0*1000.0) if v is not None else None,
 }
 
-
 class MatisHub:
-    """Hub for MATIS SNMP communication."""
-
     def __init__(self, hass: HomeAssistant, cfg: Dict[str, Any]) -> None:
-        """Initialize."""
         self.hass = hass
-        self.host: str = cfg.get("host", "")
+        self.host: str = cfg.get("host")
         self.read_com: str = cfg.get(CONF_READ_COMMUNITY, "public")
         self.write_com: str = cfg.get(CONF_WRITE_COMMUNITY, "private")
 
@@ -83,43 +73,42 @@ class MatisHub:
         self._values: Dict[str, Any] = {}
 
     async def async_first_poll(self):
-        """Perform first poll."""
         await self.coordinator.async_config_entry_first_refresh()
 
     async def async_discover(self) -> None:
-        """Dynamic discovery of present OIDs / indices."""
+        # dynamic discovery of present OIDs / indices
         new_sensors: List[Dict[str, Any]] = []
         new_switches: List[Dict[str, Any]] = []
 
         # ---- SDM220 ---- (prefix 14.11.3.1)
         sdm = {
             "energy_total": (".1.3.6.1.4.1.45797.14.11.3.1.7.1", "kWh", "div100"),
-            "power_W": (".1.3.6.1.4.1.45797.14.11.3.1.9.1", "W", "kW_div100_to_W"),
-            "voltage": (".1.3.6.1.4.1.45797.14.11.3.1.14.1", "V", "div100"),
-            "current": (".1.3.6.1.4.1.45797.14.11.3.1.39.1", "A", "div100"),
+            "power_W":      (".1.3.6.1.4.1.45797.14.11.3.1.9.1", "W",   "kW_div100_to_W"),
+            "voltage":      (".1.3.6.1.4.1.45797.14.11.3.1.14.1", "V", "div100"),
+            "current":      (".1.3.6.1.4.1.45797.14.11.3.1.39.1", "A", "div100"),
         }
-        for key, (oid, unit, tf) in sdm.items():
+        for key,(oid,unit,tf) in sdm.items():
             val = await asyncio.to_thread(_snmp_get, self.host, self.read_com, oid)
             if val is not None:
                 new_sensors.append({
                     "unique_id": f"sdm220_{key}",
-                    "name": f"SDM220 {key.replace('_', ' ').title()}",
+                    "name": f"sdm220_{key}",
                     "oid": oid, "unit": unit, "tf": tf
                 })
 
         # ---- DDS ---- (prefix 14.21.3.1)
         dds = {
             "energy_total": (".1.3.6.1.4.1.45797.14.21.3.1.7.1", "kWh", "div100"),
-            "power_W": (".1.3.6.1.4.1.45797.14.21.3.1.9.1", "W", "kW_div1000_to_W"),
-            "voltage": (".1.3.6.1.4.1.45797.14.21.3.1.15.1", "V", "div100"),
-            "current": (".1.3.6.1.4.1.45797.14.21.3.1.14.1", "A", "div1000"),
+            "power_W":      (".1.3.6.1.4.1.45797.14.21.3.1.9.1", "W",   "kW_div1000_to_W"),  # orig kW = /1000
+            "voltage":      (".1.3.6.1.4.1.45797.14.21.3.1.15.1", "V", "div100"),
+            "current":      (".1.3.6.1.4.1.45797.14.21.3.1.14.1", "A", "div1000"),
         }
-        for key, (oid, unit, tf) in dds.items():
+        for key,(oid,unit,tf) in dds.items():
             val = await asyncio.to_thread(_snmp_get, self.host, self.read_com, oid)
             if val is not None:
                 new_sensors.append({
                     "unique_id": f"dds_{key}",
-                    "name": f"DDS {key.replace('_', ' ').title()}",
+                    "name": f"dds_{key}",
                     "oid": oid, "unit": unit, "tf": tf
                 })
 
@@ -132,7 +121,7 @@ class MatisHub:
                 continue  # cell not present
             new_sensors.append({
                 "unique_id": f"battery_cell_{n}_soc",
-                "name": f"Battery Cell {n} SOC",
+                "name": f"battery_cell_{n}_soc",
                 "oid": soc_oid, "unit": "%", "tf": "div100"
             })
             volt_oid = f".1.3.6.1.4.1.45797.14.9.5.1.3.{n}"
@@ -140,17 +129,17 @@ class MatisHub:
             temp_oid = f".1.3.6.1.4.1.45797.14.9.5.1.7.{n}"
             new_sensors.append({
                 "unique_id": f"battery_cell_{n}_voltage",
-                "name": f"Battery Cell {n} Voltage",
+                "name": f"battery_cell_{n}_voltage",
                 "oid": volt_oid, "unit": "V", "tf": "div100"
             })
             new_sensors.append({
                 "unique_id": f"battery_cell_{n}_current",
-                "name": f"Battery Cell {n} Current",
+                "name": f"battery_cell_{n}_current",
                 "oid": curr_oid, "unit": "A", "tf": "div100"
             })
             new_sensors.append({
                 "unique_id": f"battery_cell_{n}_temperature",
-                "name": f"Battery Cell {n} Temperature",
+                "name": f"battery_cell_{n}_temperature",
                 "oid": temp_oid, "unit": "°C", "tf": "div10"
             })
 
@@ -162,13 +151,13 @@ class MatisHub:
                 continue
             new_switches.append({
                 "unique_id": f"attomat_{idx}",
-                "name": f"Attomat {idx}",
+                "name": f"attomat_{idx}",
                 "oid": oid
             })
             # also expose state sensor (0/1) if desired
             new_sensors.append({
                 "unique_id": f"attomat_{idx}_state",
-                "name": f"Attomat {idx} State",
+                "name": f"attomat_{idx}_state",
                 "oid": oid, "unit": None, "tf": "raw_int"
             })
 
@@ -186,9 +175,10 @@ class MatisHub:
         await self.coordinator.async_request_refresh()
 
     async def _async_poll_all(self) -> Dict[str, Any]:
-        """Pull values for all sensor OIDs."""
+        # pull values for all sensor OIDs
         results = {}
         tasks = []
+        loop = asyncio.get_running_loop()
 
         async def fetch(oid: str):
             v = await asyncio.to_thread(_snmp_get, self.host, self.read_com, oid)
@@ -210,9 +200,7 @@ class MatisHub:
         return self._values
 
     def get_value(self, unique_id: str):
-        """Get cached value for unique_id."""
         return self._values.get(unique_id)
 
     async def async_set_switch(self, oid: str, state: bool) -> bool:
-        """Set switch state."""
         return await asyncio.to_thread(_snmp_set, self.host, self.write_com, oid, 1 if state else 0)

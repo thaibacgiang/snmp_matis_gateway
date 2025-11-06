@@ -1,6 +1,3 @@
-# const.py
-"""Constants for SNMP MATIS Gateway integration."""
-
 DOMAIN = "snmp_matis_gateway"
 
 CONF_READ_COMMUNITY = "read_community"

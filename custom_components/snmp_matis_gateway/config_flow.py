@@ -1,4 +1,3 @@
-# config_flow.py
 from __future__ import annotations
 
 import voluptuous as vol
@@ -6,14 +5,10 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_HOST
 from .const import DOMAIN, CONF_READ_COMMUNITY, CONF_WRITE_COMMUNITY
 
-
 class SnmpMatisConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for SNMP MATIS Gateway."""
-
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
-        """Handle the initial step."""
         errors = {}
         if user_input is not None:
             # very light validation

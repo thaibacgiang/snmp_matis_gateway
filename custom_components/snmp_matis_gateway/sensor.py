@@ -1,4 +1,3 @@
-# sensor.py
 from __future__ import annotations
 
 from homeassistant.core import callback
@@ -11,11 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 from .hub import MatisHub
 
-
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
-):
-    """Set up SNMP MATIS Gateway sensors."""
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
     hub: MatisHub = hass.data[DOMAIN][entry.entry_id]
 
     # Create initial entities
@@ -36,18 +31,12 @@ async def async_setup_entry(
             async_add_entities(new)
 
     # poll to detect if new ones appended by hub
-    hass.helpers.event.async_track_time_interval(
-        _maybe_add_new_entities, hass.helpers.event.timedelta(seconds=15)
-    )
-
+    hass.helpers.event.async_track_time_interval(_maybe_add_new_entities, hass.helpers.event.timedelta(seconds=15))
 
 class MatisSensor(CoordinatorEntity, SensorEntity):
-    """Representation of a MATIS SNMP Sensor."""
-
     _attr_has_entity_name = True
 
     def __init__(self, hub: MatisHub, desc: dict):
-        """Initialize the sensor."""
         super().__init__(hub.coordinator)
         self.hub = hub
         self._desc = desc
@@ -57,5 +46,4 @@ class MatisSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def native_value(self):
-        """Return the native value of the sensor."""
         return self.hub.get_value(self._desc["unique_id"])
