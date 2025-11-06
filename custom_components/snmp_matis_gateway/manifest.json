@@ -1,7 +1,8 @@
+// manifest.json
 {
   "domain": "snmp_matis_gateway",
-  "name": "Trạm Điện Nhà Thái (SNMP Gateway)",
-  "version": "2.1.0",
+  "name": "SNMP MATIS Gateway",
+  "version": "2.0.0",
   "config_flow": true,
   "documentation": "https://github.com/thaibacgiang/snmp_matis_gateway",
   "requirements": ["pysnmp"],
